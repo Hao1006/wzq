@@ -3,7 +3,12 @@
  */
 let cv = document.getElementById("chessboard");
 let cx = cv.getContext("2d");
-let black = true;
+let tip = document.getElementById("tip");
+let black = true; //棋子颜色
+let count = 0;//胜利方法
+let playerWin = [];
+let aiWin = [];
+let gameOver = false;
 
 //存储棋子
 let chessBoard = [];
@@ -12,6 +17,60 @@ for (let i =0; i  < 15; i ++) {
     for (let j = 0; j < 15; j++) {
         chessBoard[i][j] = 0;
     }
+}
+
+//初始化胜利数组
+let wins = [];
+for (let i = 0; i < 15; i ++) {
+    wins[i] = [];
+    for (let j = 0; j < 15; j++) {
+        wins[i][j] = [];
+    }
+}
+
+//横向的所有胜利方法
+for (let i =0; i < 15; i ++) {     //胜利方法的纵坐标
+    for (let j = 0; j < 11; j ++) {     //胜利方法的横坐标
+        for (let m = 0; m < 5; m++) {    //棋子的连续个数
+            wins[i][j + m][count] = true;   //横线上连续5颗棋子
+        }
+        count ++ ;   //胜利方法 + 1
+    }
+}
+
+//纵向的胜利方法
+for (let i =0; i < 11; i ++) {
+    for (let j = 0; j < 15; j ++) {
+        for (let m = 0; m < 5; m++) {
+            wins[i + m][j ][count] = true;
+        }
+        count ++ ;
+    }
+}
+
+//斜向的胜利方法
+for (let i =0; i < 11; i ++) {
+    for (let j = 0; j < 11; j ++) {
+        for (let m = 0; m < 5; m++) {
+            wins[i + m][j + m][count] = true;
+        }
+        count ++ ;
+    }
+}
+
+//反斜向的胜利方法
+for (let i =0; i < 11; i ++) {
+    for (let j = 14; j > 3; j --) {
+        for (let m = 0; m < 5; m++) {
+            wins[i + m][j - m][count] = true;
+        }
+        count ++ ;
+    }
+}
+
+for (let i =0; i < count; i++) {
+    playerWin[i] = 0;
+    aiWin[i] = 0;
 }
 
 window.onload = function () {
@@ -50,6 +109,9 @@ function onStep(i, j, black) {
 
 //点击落子
 cv.onclick = function (e) {
+    if (gameOver) {
+        return;
+    }
     let x = e.offsetX;
     let y = e.offsetY;
 
@@ -62,9 +124,21 @@ cv.onclick = function (e) {
         onStep(i, j, black);
         if (black) {
             chessBoard[i][j] = 1;
+            tip.innerHTML = "白棋下";
         }else {
             chessBoard[i][j] = 2;
+            tip.innerHTML = "黑棋下";
         }
         black = !black;
+        for (let k = 0; k < count; k ++) {
+            if (wins[i][j][k]) {     //判断是否有棋子
+                playerWin[k] ++;
+                aiWin[k] = 6;
+                if (playerWin[k] == 5) {
+                    window.alert("你赢了");
+                    gameOver = true;
+                }
+            }
+        }
     }
 }

@@ -10,7 +10,7 @@ let playerWin = [];
 let aiWin = [];
 let gameOver = false;
 
-//存储棋子
+//遍历棋盘
 let chessBoard = [];
 for (let i =0; i  < 15; i ++) {
     chessBoard[i] = [];
@@ -74,8 +74,6 @@ for (let i =0; i < count; i++) {
 }
 
 window.onload = function () {
-    let cv = document.getElementById("chessboard");
-    let cx = cv.getContext("2d");
     drawBoard();
 }
 
@@ -112,6 +110,9 @@ cv.onclick = function (e) {
     if (gameOver) {
         return;
     }
+    if (!black) {
+        return;
+    }
     let x = e.offsetX;
     let y = e.offsetY;
 
@@ -122,23 +123,100 @@ cv.onclick = function (e) {
     //判断点击的位置上是否有棋子
     if (chessBoard[i][j] == 0) {
         onStep(i, j, black);
-        if (black) {
-            chessBoard[i][j] = 1;
-            tip.innerHTML = "白棋下";
-        }else {
-            chessBoard[i][j] = 2;
-            tip.innerHTML = "黑棋下";
-        }
-        black = !black;
+        chessBoard[i][j] = 1;
         for (let k = 0; k < count; k ++) {
             if (wins[i][j][k]) {     //判断是否有棋子
                 playerWin[k] ++;
                 aiWin[k] = 6;
                 if (playerWin[k] == 5) {
                     window.alert("你赢了");
+                    tip.innerHTML = "恭喜你获得胜利！"
                     gameOver = true;
                 }
             }
         }
+        if (!gameOver) {
+            black = !black;
+            ai();
+        }
     }
 }
+
+//计算机ai的实现
+function ai() {
+    let playerScore = [], aiScore = [];
+    let max = 0, u = 0, v = 0;
+    for (let i = 0; i < 15; i++) {
+        playerScore[i] = [];
+        aiScore[i] = [];
+        for (let j = 0; j < 15; j++) {
+            playerScore[i][j] = 0;
+            aiScore[i][j] = 0;
+        }
+    }
+    for (let i = 0; i < 15; i++) {
+        for (let j = 0; j < 15; j++) {
+            if (chessBoard[i][j] == 0) {
+                for (let k = 0; k < count; k++) {
+                    if (wins[i][j][k]) {
+                        if (playerWin[k] == 1) {
+                            playerScore[i][j] += 10;
+                        }else if (playerWin[k] == 2) {
+                            playerScore[i][j] += 100;
+                        }else if (playerWin[k] == 3) {
+                            playerScore[i][j] += 1000;
+                        }else if (playerWin[k] == 4) {
+                            playerScore[i][j] += 10000;
+                        }
+                        if (aiWin[k] == 1) {
+                            aiScore[i][j] += 11;
+                        }else if (aiWin[k] == 2) {
+                            aiScore[i][j] += 110;
+                        }else if (aiWin[k] == 3) {
+                            aiScore[i][j] += 1100;
+                        }else if (aiWin[k] == 4) {
+                            aiScore[i][j] += 20000;
+                        }
+                    }
+                }
+                if (playerScore[i][j] > max) {
+                    max = playerScore[i][j];
+                    u = i;
+                    v = j;
+                }else if (playerScore[i][j] == max) {
+                    if (aiScore[i][j] > aiScore[u][v]) {
+                        u = i;
+                        v = j;
+                    }
+                }
+                if (aiScore[i][j] > max) {
+                    max = aiScore[i][j];
+                    u = i;
+                    v = j;
+                }else if (aiScore[i][j] == max) {
+                    if (playerScore[i][j] > playerScore[u][v]) {
+                        u = i;
+                        v = j;
+                    }
+                }
+            }
+        }
+    }
+    onStep(u ,v, false);
+    chessBoard[u][v] = 2;
+    for (let k = 0; k < count; k ++) {
+        if (wins[u][v][k]) {     //判断是否有棋子
+            aiWin[k] ++;
+            playerWin[k] = 6;
+            if (aiWin[k] == 5) {
+                window.alert("计算机赢了");
+                tip.innerHTML = "计算机获得胜利！"
+                gameOver = true;
+            }
+        }
+    }
+    if (!gameOver) {
+        black = !black;
+    }
+}
+

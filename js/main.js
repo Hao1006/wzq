@@ -209,8 +209,8 @@ function ai() {
             aiWin[k] ++;
             playerWin[k] = 6;
             if (aiWin[k] == 5) {
-                window.alert("计算机赢了");
-                tip.innerHTML = "计算机获得胜利！"
+                window.alert("你输了");
+                tip.innerHTML = "人机获得胜利！"
                 gameOver = true;
             }
         }
